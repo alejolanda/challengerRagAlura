@@ -1,4 +1,4 @@
-# Vóltico ⚡ — Asesor Energético con IA
+# VólticvS ⚡ — Asesor Energético con IA
 
 Proyecto final del desafío **Alura Agente** (Oracle ONE G-9). Un agente conversacional
 que actúa como asesor energético: pregunta sobre los artefactos e iluminación del hogar,
@@ -62,7 +62,7 @@ Usuario ──> Agente LLM (Groq / Llama 3.3)  ──tool calling──>  Motor 
   y conversión kWh → CLP.
 - `src/tools.py`: expone esas funciones como *tools* de LangChain para que el modelo
   las pueda invocar.
-- `src/agente.py`: el agente conversacional (persona "Vóltico"), con el bucle de
+- `src/agente.py`: el agente conversacional (persona "VólticvS"), con el bucle de
   tool-calling y el prompt de sistema.
 
 **Por qué el LLM no calcula los números directamente:** los modelos de lenguaje no son
@@ -74,16 +74,16 @@ redacta la respuesta final con los resultados reales.
 
 **Usuario:** "Tengo 4 cargadores de celular enchufados todo el día pero solo cargo el
 teléfono 2 horas."
-**Vóltico:** calcula el consumo en standby de los 4 cargadores vs. desconectarlos, y
+**VólticvS:** calcula el consumo en standby de los 4 cargadores vs. desconectarlos, y
 entrega el ahorro mensual en kWh y CLP.
 
 **Usuario:** "Tengo 6 ampolletas incandescentes encendidas como 5 horas al día."
-**Vóltico:** compara el consumo incandescente vs. LED equivalente y entrega el ahorro
+**VólticvS:** compara el consumo incandescente vs. LED equivalente y entrega el ahorro
 mensual y anual en CLP.
 
 **Usuario:** "Siempre lleno el hervidor completo (1.7 litros) pero solo tomo una taza
 de té, unas 3 veces al día."
-**Vóltico:** calcula la energía desperdiciada en calentar agua de más y el ahorro anual
+**VólticvS:** calcula la energía desperdiciada en calentar agua de más y el ahorro anual
 de hervir solo lo necesario.
 
 ## Alcance actual vs. roadmap (mirada de producto)
