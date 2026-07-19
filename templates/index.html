@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vólticvs — Asesor Energético</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero__brand">
+    <span class="hero__bolt">⚡</span>
+    <h1>VólticvS</h1>
+  </div>
+  <p class="hero__tagline">Tu asesor energético. Cuéntame qué tienes conectado y te digo cuánto gastas — y cuánto puedes ahorrar.</p>
+
+  <div class="meter" aria-live="polite">
+    <span class="meter__value" id="meterValue">000.0</span>
+    <span class="meter__unit">kWh / mes</span>
+  </div>
+</header>
+
+<main class="layout">
+  <form id="formularioEnergia">
+
+    <section class="card">
+      <h2 class="card__title">00 · ¿Desde dónde nos escribes?</h2>
+      <p class="card__hint">
+        Esto ajusta la moneda y deja un valor de tarifa referencial de partida.
+        <strong>Los valores por país aún no están verificados en tiempo real</strong> — siempre podrás
+        corregir la tarifa manualmente con el valor real de tu boleta más abajo.
+      </p>
+      <label>País
+        <select id="selectPais">
+          <option value="">Cargando países…</option>
+        </select>
+      </label>
+      <p class="card__hint" id="fuenteTarifa"></p>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">01 · Electrodomésticos conectados</h2>
+      <p class="card__hint">Marca lo que tienes. Para lo que enciendes y apagas, indica horas de uso activo al día.</p>
+
+      <div class="checklist">
+        <div class="item item--con-horas" data-clave="cargador_celular">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Cargador de celular <span class="item__watts">(~5W cargando / ~0.5W fantasma)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de <strong>carga activa</strong>/día <input type="number" min="0" max="24" step="0.25" value="1" class="horas"></label>
+            <label class="item__fantasma"><input type="checkbox" class="queda-conectado" checked> Queda enchufado el resto del día (consumo fantasma)</label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="cargador_tablet">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Cargador de tablet <span class="item__watts">(~10W cargando / ~0.5W fantasma)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de <strong>carga activa</strong>/día <input type="number" min="0" max="24" step="0.25" value="1.5" class="horas"></label>
+            <label class="item__fantasma"><input type="checkbox" class="queda-conectado" checked> Queda enchufado el resto del día (consumo fantasma)</label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="cargador_notebook">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Cargador de notebook <span class="item__watts">(~65W cargando / ~1.5W fantasma)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de <strong>carga activa</strong>/día <input type="number" min="0" max="24" step="0.25" value="2" class="horas"></label>
+            <label class="item__fantasma"><input type="checkbox" class="queda-conectado" checked> Queda enchufado el resto del día (consumo fantasma)</label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="television">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Televisor <span class="item__watts">(~100W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas encendido/día <input type="number" min="0" max="24" step="0.5" value="4" class="horas"></label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="decodificador_tv">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Decodificador / módem TV <span class="item__watts">(~15W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas encendido/día <input type="number" min="0" max="24" step="0.5" value="24" class="horas"></label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="computador_escritorio">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Computador de escritorio <span class="item__watts">(~150W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas encendido/día <input type="number" min="0" max="24" step="0.5" value="6" class="horas"></label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="microondas">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Microondas <span class="item__watts">(~1200W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" value="0.3" class="horas"></label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="porton_electrico">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Portón eléctrico <span class="item__watts">(~300W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.1" class="horas"></label>
+          </div>
+        </div>
+
+        <div class="item item--con-horas" data-clave="campana_extractora">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Campana extractora <span class="item__watts">(~120W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.5" value="1" class="horas"></label>
+          </div>
+        </div>
+
+        <!-- Artefactos de uso continuo 24/7: horas fija en 24, solo se pide cantidad -->
+        <div class="item item--fijo" data-clave="refrigerador">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Refrigerador <span class="item__watts">(~150W promedio, 24/7)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <input type="hidden" class="horas" value="24">
+          </div>
+        </div>
+
+        <div class="item item--fijo" data-clave="congeladora">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Congeladora / freezer <span class="item__watts">(~200W promedio, 24/7)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <input type="hidden" class="horas" value="24">
+          </div>
+        </div>
+
+        <div class="item item--fijo" data-clave="router_wifi">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Router WiFi <span class="item__watts">(~8W, 24/7)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <input type="hidden" class="horas" value="24">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">02 · Otros artefactos comunes</h2>
+      <p class="card__hint">Marca los que tengas. Este panel se desplaza — hay más artefactos de los que se ven a primera vista.</p>
+      <div class="checklist scroll-panel">
+        <div class="item item--con-horas" data-clave="cuchillo_electrico">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Cuchillo eléctrico <span class="item__watts">(~100W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.1" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="exprimidor_electrico">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Exprimidor eléctrico <span class="item__watts">(~150W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.1" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="abrelatas_electrico">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Abrelatas eléctrico <span class="item__watts">(~60W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.05" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="licuadora">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Licuadora <span class="item__watts">(~300W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.15" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="tostadora">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Tostadora <span class="item__watts">(~800W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.1" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="plancha_ropa">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Plancha de ropa <span class="item__watts">(~1000W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" value="0.5" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="secador_pelo">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Secador de pelo <span class="item__watts">(~1200W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.2" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="aspiradora">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Aspiradora <span class="item__watts">(~1400W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.05" value="0.3" class="horas"></label>
+          </div>
+          <button type="button" class="btn btn--ghost btn--comparar" data-categoria="aspiradora">Ver alternativas más eficientes</button>
+          <div class="comparador-resultado" hidden></div>
+        </div>
+        <div class="item item--con-horas" data-clave="lavadora">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Lavadora de ropa <span class="item__watts">(~500W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" value="1" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="secadora_ropa">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Secadora de ropa <span class="item__watts">(~2500W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" value="0.5" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="horno_electrico">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Horno eléctrico <span class="item__watts">(~2000W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" value="0.5" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="olla_arrocera">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Olla arrocera <span class="item__watts">(~700W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" value="0.5" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="cafetera_electrica">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Cafetera eléctrica <span class="item__watts">(~800W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" value="0.3" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="ventilador">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Ventilador <span class="item__watts">(~50W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.5" value="4" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-clave="calefactor_electrico">
+          <label class="item__check"><input type="checkbox" class="chk-artefacto"> Calefactor eléctrico <span class="item__watts">(~1500W)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas de uso/día <input type="number" min="0" max="24" step="0.5" value="2" class="horas"></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">03 · Iluminación</h2>
+      <p class="card__hint">Marca todos los tipos que tengas en la casa (pueden ser varios a la vez).</p>
+      <div class="checklist">
+        <div class="item item--con-horas" data-tipo="led">
+          <label class="item__check"><input type="checkbox" class="chk-iluminacion"> LED <span class="item__watts">(~9W c/u)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="6" class="cantidad"></label>
+            <label>Horas encendidas/día <input type="number" min="0" max="24" step="0.5" value="5" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-tipo="incandescente">
+          <label class="item__check"><input type="checkbox" class="chk-iluminacion"> Incandescente <span class="item__watts">(~60W c/u)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="4" class="cantidad"></label>
+            <label>Horas encendidas/día <input type="number" min="0" max="24" step="0.5" value="5" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-tipo="fluorescente_tubo">
+          <label class="item__check"><input type="checkbox" class="chk-iluminacion"> Tubo fluorescente <span class="item__watts">(~36W c/u)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="2" class="cantidad"></label>
+            <label>Horas encendidas/día <input type="number" min="0" max="24" step="0.5" value="6" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-tipo="fluorescente_ahorro">
+          <label class="item__check"><input type="checkbox" class="chk-iluminacion"> Ahorradora / CFL <span class="item__watts">(~15W c/u)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="2" class="cantidad"></label>
+            <label>Horas encendidas/día <input type="number" min="0" max="24" step="0.5" value="5" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-tipo="halogeno">
+          <label class="item__check"><input type="checkbox" class="chk-iluminacion"> Halógena <span class="item__watts">(~42W c/u)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="2" class="cantidad"></label>
+            <label>Horas encendidas/día <input type="number" min="0" max="24" step="0.5" value="4" class="horas"></label>
+          </div>
+        </div>
+        <div class="item item--con-horas" data-tipo="neon_exterior">
+          <label class="item__check"><input type="checkbox" class="chk-iluminacion"> Neón / letrero exterior <span class="item__watts">(~20W c/u)</span></label>
+          <div class="item__fields">
+            <label>Cantidad <input type="number" min="0" value="1" class="cantidad"></label>
+            <label>Horas encendidas/día <input type="number" min="0" max="24" step="0.5" value="8" class="horas"></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">04 · Cámaras de seguridad (CCTV)</h2>
+      <div class="radio-row">
+        <label><input type="radio" name="cctv" value="no" checked> No tengo</label>
+        <label><input type="radio" name="cctv" value="si"> Sí tengo</label>
+      </div>
+      <div class="item__fields" id="camposCctv" hidden>
+        <label>Cantidad de cámaras <span class="item__watts">(~6W c/u)</span><input type="number" min="0" value="2" id="cantidadCamaras"></label>
+        <label><input type="checkbox" id="tieneDvr" checked> Tengo grabador DVR/NVR <span class="item__watts">(~15W)</span></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">05 · Agua caliente (hervidor)</h2>
+      <div class="radio-row">
+        <label><input type="radio" name="hervidor" value="no" checked> No uso hervidor eléctrico</label>
+        <label><input type="radio" name="hervidor" value="si"> Sí, uso hervidor eléctrico</label>
+      </div>
+      <div class="item__fields" id="camposHervidor" hidden>
+        <label>Litros que llenas habitualmente <input type="number" min="0" step="0.1" value="1.7" id="litrosHabitual"></label>
+        <label>Litros que realmente necesitas <input type="number" min="0" step="0.1" value="0.3" id="litrosNecesario"></label>
+        <label>Veces al día <input type="number" min="0" value="3" id="usosDia"></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">06 · Tus propios artefactos</h2>
+      <p class="card__hint">
+        ¿Tienes algo que no está en las listas? Un mueble taller con compresor, un plotter de arquitectura,
+        una máquina de café profesional, equipo de una consulta médica en casa — agrégalo aquí.
+        Si no sabes la potencia exacta, la etiqueta o el manual del equipo la indica en Watts (W).
+      </p>
+      <div id="listaPersonalizados"></div>
+      <button type="button" class="btn btn--ghost" id="btnAgregarPersonalizado">+ Agregar artefacto</button>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">07 · Tarifa eléctrica</h2>
+      <label>Valor del kWh en tu boleta (CLP)
+        <input type="number" min="1" value="150" id="tarifaClp">
+      </label>
+      <p class="card__hint">Si no lo sabes, dejamos un valor referencial. Revisa tu última boleta para mayor exactitud.</p>
+    </section>
+
+    <button type="submit" class="btn btn--primary">Calcular mi consumo y ahorro</button>
+  </form>
+
+  <section class="card resultados" id="resultados" hidden>
+    <h2 class="card__title">Resultado</h2>
+    <p class="resultados__narrativa" id="narrativa"></p>
+    <div class="resultados__totales">
+      <div><span class="resultados__label">Consumo total</span><span class="resultados__valor" id="totalKwh">—</span></div>
+      <div><span class="resultados__label">Factura estimada</span><span class="resultados__valor" id="totalClp">—</span></div>
+      <div><span class="resultados__label ahorro">Ahorro potencial/mes</span><span class="resultados__valor ahorro" id="ahorroClp">—</span></div>
+    </div>
+    <table class="tabla-desglose">
+      <thead><tr><th>Ítem</th><th>kWh/mes</th><th>Ahorro CLP/mes</th></tr></thead>
+      <tbody id="desgloseBody"></tbody>
+    </table>
+    <button type="button" class="btn btn--ghost" id="btnNuevoCalculo">↺ Nuevo cálculo / nueva persona</button>
+  </section>
+</main>
+
+<template id="templatePersonalizado">
+  <div class="item personalizado">
+    <label>Nombre <input type="text" class="p-nombre" placeholder="Ej: Máquina de café profesional"></label>
+    <label>Potencia (W) <input type="number" min="0" class="p-watts" placeholder="Ej: 1200"></label>
+    <label>Horas de uso/día <input type="number" min="0" max="24" step="0.1" class="p-horas" placeholder="Ej: 1"></label>
+    <label>Cantidad <input type="number" min="1" value="1" class="p-cantidad"></label>
+    <button type="button" class="btn btn--eliminar">Quitar</button>
+  </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
