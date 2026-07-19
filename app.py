@@ -83,6 +83,7 @@ def calcular():
                 float(item["horas"]),
                 int(item.get("cantidad", 1)),
                 queda_conectado=bool(item.get("queda_conectado", True)),
+                veces_semana=float(item.get("veces_semana", 7)),
             )
             resultado["tarifa_aplicada"] = tarifa
             desglose.append(resultado)

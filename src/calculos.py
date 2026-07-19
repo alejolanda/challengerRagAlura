@@ -20,24 +20,28 @@ def kwh_a_clp(kwh: float, tarifa_clp_kwh: float = None) -> float:
     return round(kwh * tarifa, 1)
 
 
-def consumo_mensual_standby(clave_artefacto: str, horas_uso_diario: float, cantidad: int = 1, queda_conectado: bool = True) -> dict:
+def consumo_mensual_standby(clave_artefacto: str, horas_uso_diario: float, cantidad: int = 1, queda_conectado: bool = True, veces_semana: float = 7) -> dict:
     """
     Calcula el consumo mensual de un artefacto considerando:
     - horas en uso activo (ej. horas reales de carga de un celular)
     - el resto del día en modo standby/fantasma, SOLO SI queda_conectado=True
       (si el usuario desconecta el cargador cuando no lo usa, no hay consumo fantasma)
+    - veces_semana: cuántos días a la semana se usa (7 = todos los días, valor por
+      defecto, mantiene el comportamiento anterior). Para lavadora/secadora/etc. que
+      se usan 1-2 veces por semana, este valor evita inflar el consumo mensual.
     """
     ref = REFERENCIA["electrodomesticos"].get(clave_artefacto)
     if not ref:
         raise ValueError(f"Artefacto '{clave_artefacto}' no está en la tabla de referencia.")
 
+    dias_al_mes = veces_semana * (30 / 7)
     horas_standby = max(0, 24 - horas_uso_diario) if queda_conectado else 0
     wh_dia = (ref["watts_uso"] * horas_uso_diario) + (ref["watts_standby"] * horas_standby)
-    kwh_mes = (wh_dia * cantidad * 30) / 1000
+    kwh_mes = (wh_dia * cantidad * dias_al_mes) / 1000
 
     # Escenario "ahorro": desconectar cuando no se usa (standby = 0)
     wh_dia_optimo = ref["watts_uso"] * horas_uso_diario
-    kwh_mes_optimo = (wh_dia_optimo * cantidad * 30) / 1000
+    kwh_mes_optimo = (wh_dia_optimo * cantidad * dias_al_mes) / 1000
 
     return {
         "nombre": ref["nombre"],

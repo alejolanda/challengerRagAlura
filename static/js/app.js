@@ -87,11 +87,13 @@ function recolectarElectrodomesticos() {
     const check = item.querySelector(".chk-artefacto");
     if (!check.checked) return;
     const quedaConectadoInput = item.querySelector(".queda-conectado");
+    const vecesSemanaInput = item.querySelector(".veces-semana");
     items.push({
       clave: item.dataset.clave,
       cantidad: parseFloat(item.querySelector(".cantidad").value) || 0,
       horas: parseFloat(item.querySelector(".horas").value) || 0,
       queda_conectado: quedaConectadoInput ? quedaConectadoInput.checked : true,
+      veces_semana: vecesSemanaInput ? parseFloat(vecesSemanaInput.value) || 7 : 7,
     });
   });
   return items;
