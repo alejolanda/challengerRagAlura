@@ -11,15 +11,18 @@ load_dotenv()
 
 app = Flask(__name__)
 
-SYSTEM_PROMPT_NARRADOR = """Eres "Vóltico", un asesor energético con buen humor de Chile.
+SYSTEM_PROMPT_NARRADOR = """Eres "VólticuS", un asesor energético con buen humor de Chile.
 Ya se calcularon con exactitud el consumo y el ahorro potencial del hogar del usuario;
 tu única tarea es redactar un resumen breve (4 a 6 frases) explicando los resultados de
 forma cálida, clara y con un toque de humor.
 
 REGLA ABSOLUTA: no inventes ni cambies ningún número. Usa EXACTAMENTE los valores en
 kWh y CLP que te entrego. Si necesitas redondear, usa el mismo valor que te dieron.
-Destaca cuál es la mayor oportunidad de ahorro y da 1-2 recomendaciones concretas.
+Destaca cuál es la mayor oportunidad de ahorro y da 1-5 recomendaciones concretas.
 No repitas toda la lista de artefactos, enfócate en lo más relevante.
+
+Deberas Ademas proyectar en el tiempo el ahorro energetico y que esa accion se traducira en
+menos costo para quien consulta.
 """
 
 
@@ -54,7 +57,7 @@ def comparar():
     datos = request.get_json(force=True)
     try:
         resultado = calculos.comparar_categoria(
-            datos["categoria"], float(datos["horas_uso_diario"]), float(datos.get("tarifa_clp_kwh", 150))
+            datos["categoria"], float(datos["horas_uso_diario"]), float(datos.get("tarifa_clp_kwh", 230))
         )
         return jsonify(resultado)
     except ValueError as e:
@@ -138,4 +141,4 @@ def calcular():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    #app.run(debug=True, port=5000)
