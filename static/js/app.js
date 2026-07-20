@@ -2,6 +2,16 @@ const formulario = document.getElementById("formularioEnergia");
 const resultadosSeccion = document.getElementById("resultados");
 const meterValue = document.getElementById("meterValue");
 
+// Agregar "veces por semana" a TODOS los artefactos con horas de uso que no lo tengan ya
+document.querySelectorAll(".item.item--con-horas").forEach((item) => {
+  const campos = item.querySelector(".item__fields");
+  if (campos && !item.querySelector(".veces-semana")) {
+    const etiqueta = document.createElement("label");
+    etiqueta.innerHTML = 'Veces por semana <input type="number" min="1" max="7" value="7" class="veces-semana">';
+    campos.appendChild(etiqueta);
+  }
+});
+
 // Cargar países desde el backend
 async function cargarPaises() {
   const selectPais = document.getElementById("selectPais");
@@ -235,6 +245,29 @@ function mostrarResultados(resultado) {
   document.getElementById("totalClp").textContent = `$${resultado.total_clp_mes.toLocaleString("es-CL")}`;
   document.getElementById("ahorroClp").textContent = `$${resultado.ahorro_potencial_clp_mes.toLocaleString("es-CL")}`;
 
+  // Recomendaciones en frases
+  const listaRecomendaciones = document.getElementById("listaRecomendaciones");
+  listaRecomendaciones.innerHTML = "";
+  if (resultado.recomendaciones && resultado.recomendaciones.length > 0) {
+    resultado.recomendaciones.forEach((frase) => {
+      const li = document.createElement("li");
+      li.textContent = frase;
+      listaRecomendaciones.appendChild(li);
+    });
+  } else {
+    const li = document.createElement("li");
+    li.textContent = "No encontramos oportunidades de ahorro adicionales con lo que marcaste — ¡ya vas bien!";
+    listaRecomendaciones.appendChild(li);
+  }
+
+  // Proyección en el tiempo
+  if (resultado.proyeccion) {
+    document.getElementById("proy1Mes").textContent = `$${resultado.proyeccion.ahorro_1_mes.toLocaleString("es-CL")}`;
+    document.getElementById("proy6Meses").textContent = `$${resultado.proyeccion.ahorro_6_meses.toLocaleString("es-CL")}`;
+    document.getElementById("proy1Anio").textContent = `$${resultado.proyeccion.ahorro_1_anio.toLocaleString("es-CL")}`;
+    document.getElementById("proy5Anios").textContent = `$${resultado.proyeccion.ahorro_5_anios.toLocaleString("es-CL")}`;
+  }
+
   const cuerpo = document.getElementById("desgloseBody");
   cuerpo.innerHTML = "";
   resultado.desglose.forEach((item) => {
@@ -248,3 +281,7 @@ function mostrarResultados(resultado) {
   animarMedidor(resultado.total_kwh_mes);
   resultadosSeccion.scrollIntoView({ behavior: "smooth" });
 }
+
+document.getElementById("btnImprimir").addEventListener("click", () => {
+  window.print();
+});

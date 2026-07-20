@@ -11,18 +11,17 @@ load_dotenv()
 
 app = Flask(__name__)
 
-SYSTEM_PROMPT_NARRADOR = """Eres "VólticuS", un asesor energético con buen humor de Chile.
+SYSTEM_PROMPT_NARRADOR = """Eres "VólticvS", un asesor energético con buen humor de Chile.
 Ya se calcularon con exactitud el consumo y el ahorro potencial del hogar del usuario;
 tu única tarea es redactar un resumen breve (4 a 6 frases) explicando los resultados de
 forma cálida, clara y con un toque de humor.
 
 REGLA ABSOLUTA: no inventes ni cambies ningún número. Usa EXACTAMENTE los valores en
 kWh y CLP que te entrego. Si necesitas redondear, usa el mismo valor que te dieron.
-Destaca cuál es la mayor oportunidad de ahorro y da 1-5 recomendaciones concretas.
+Destaca cuál es la mayor oportunidad de ahorro y da 5 - 7 recomendaciones concretas.
 No repitas toda la lista de artefactos, enfócate en lo más relevante.
 
-Deberas Ademas proyectar en el tiempo el ahorro energetico y que esa accion se traducira en
-menos costo para quien consulta.
+Debes realizar una proyeccion en el tiempo ademas a los 3 meses, 6 meses, 12 meses, a los 2 años y 5 años.
 """
 
 
@@ -44,6 +43,36 @@ def generar_narrativa(resumen: dict) -> str:
             f"(~${resumen['total_clp_mes']:,.0f} CLP). Podrías ahorrar hasta "
             f"${resumen['ahorro_potencial_clp_mes']:,.0f} CLP al mes aplicando los cambios sugeridos."
         )
+
+
+def generar_recomendaciones(desglose: list) -> list:
+    """
+    Convierte el desglose numérico en frases de recomendación concretas,
+    cada una con el ahorro mensual y anual ya calculado (determinista, sin IA).
+    Ordenadas de mayor a menor impacto de ahorro.
+    """
+    candidatas = []
+    for item in desglose:
+        ahorro_mes = item.get("ahorro_clp_mes", 0)
+        if not ahorro_mes or ahorro_mes <= 0:
+            continue
+        ahorro_anio = round(ahorro_mes * 12)
+        nombre = item["nombre"]
+
+        if "kwh_mes_si_fuera_led" in item:
+            frase = f"Cambia tu {nombre.lower()} a LED"
+        elif "kwh_mes_llenado_habitual" in item:
+            frase = "Hierve solo el agua que necesitas en vez de llenar el hervidor completo"
+        elif "kwh_mes_optimo" in item:
+            frase = f"Desconecta {nombre.lower()} cuando no lo estés usando"
+        else:
+            frase = f"Optimiza el uso de {nombre.lower()}"
+
+        texto = f"{frase}: ahorras ${ahorro_mes:,.0f}/mes (${ahorro_anio:,.0f} al año)."
+        candidatas.append((ahorro_mes, texto))
+
+    candidatas.sort(key=lambda par: par[0], reverse=True)
+    return [texto for _, texto in candidatas]
 
 
 @app.route("/api/paises")
@@ -134,6 +163,13 @@ def calcular():
         "total_clp_mes": round(total_clp_mes, 0),
         "ahorro_potencial_clp_mes": round(ahorro_potencial_clp_mes, 0),
         "desglose": desglose,
+        "recomendaciones": generar_recomendaciones(desglose),
+        "proyeccion": {
+            "ahorro_1_mes": round(ahorro_potencial_clp_mes, 0),
+            "ahorro_6_meses": round(ahorro_potencial_clp_mes * 6, 0),
+            "ahorro_1_anio": round(ahorro_potencial_clp_mes * 12, 0),
+            "ahorro_5_anios": round(ahorro_potencial_clp_mes * 60, 0),
+        },
     }
 
     resumen["narrativa"] = generar_narrativa(resumen)

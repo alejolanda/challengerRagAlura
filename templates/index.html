@@ -16,11 +16,11 @@
     <h1>VólticvS</h1>
     <span class="hero__bolt">⚡⚡</span>
   </div>
-  <p class="hero__tagline">Soy Tu asesor energético. <br> Cuéntame qué tienes conectado y te digo cuánto gastas<br>⚡⚡⚡ y cuánto puedes ahorrar.⚡⚡⚡</p>
+  <p class="hero__tagline">Soy tu asesor energético. <br>⚡⚡Cuéntame qué tienes conectado y te digo cuánto gastas <br>⚡⚡⚡y cuánto puedes ahorrar.⚡⚡⚡</p>
 
   <div class="meter" aria-live="polite">
     <span class="meter__value" id="meterValue">000.0</span>
-    <span class="meter__unit">kWh / mes⚡⚡⚡</span>
+    <span class="meter__unit">kWh / mes</span>
   </div>
 </header>
 
@@ -365,13 +365,37 @@
   </form>
 
   <section class="card resultados" id="resultados" hidden>
-    <h2 class="card__title">Resultado</h2>
+    <div class="resultados__encabezado">
+      <h2 class="card__title">Resultado</h2>
+      <button type="button" class="btn btn--ghost" id="btnImprimir">🖨️ Imprimir informe</button>
+    </div>
     <p class="resultados__narrativa" id="narrativa"></p>
     <div class="resultados__totales">
       <div><span class="resultados__label">Consumo total</span><span class="resultados__valor" id="totalKwh">—</span></div>
       <div><span class="resultados__label">Factura estimada</span><span class="resultados__valor" id="totalClp">—</span></div>
       <div><span class="resultados__label ahorro">Ahorro potencial/mes</span><span class="resultados__valor ahorro" id="ahorroClp">—</span></div>
     </div>
+
+    <h3 class="resultados__subtitulo">📋 Recomendaciones concretas</h3>
+    <ul class="resultados__recomendaciones" id="listaRecomendaciones"></ul>
+
+    <h3 class="resultados__subtitulo">📈 Cómo se sostiene tu ahorro en el tiempo</h3>
+    <table class="tabla-desglose tabla-proyeccion">
+      <thead><tr><th>1 mes</th><th>6 meses</th><th>1 año</th><th>5 años</th></tr></thead>
+      <tbody>
+        <tr>
+          <td id="proy1Mes">—</td>
+          <td id="proy6Meses">—</td>
+          <td id="proy1Anio">—</td>
+          <td id="proy5Anios">—</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="card__hint">
+      Este ahorro se sostiene mientras mantengas los hábitos recomendados (desconectar, cambiar a LED, etc.)
+      — no es un descuento único, se repite cada mes mientras no vuelvas a los hábitos anteriores.
+    </p>
+
     <table class="tabla-desglose">
       <thead><tr><th>Ítem</th><th>kWh/mes</th><th>Ahorro CLP/mes</th></tr></thead>
       <tbody id="desgloseBody"></tbody>

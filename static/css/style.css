@@ -357,6 +357,57 @@ input[type="text"] { width: 14rem; }
   margin-top: 0.5rem;
 }
 
+.resultados__encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.resultados__subtitulo {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--accent-volt);
+  margin: 1.5rem 0 0.75rem;
+}
+
+.resultados__recomendaciones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.resultados__recomendaciones li {
+  background: var(--bg-panel-raised);
+  border-left: 3px solid var(--accent-ahorro);
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.tabla-proyeccion th, .tabla-proyeccion td {
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+.tabla-proyeccion td {
+  font-size: 1.1rem;
+  color: var(--accent-ahorro);
+  font-weight: 600;
+}
+
+@media print {
+  body { background: white; color: black; }
+  .hero, form#formularioEnergia, .btn, .comparador-resultado { display: none !important; }
+  .card { border: 1px solid #ccc; background: white; page-break-inside: avoid; }
+  .resultados__valor, .resultados__valor.ahorro, .tabla-proyeccion td { color: black; }
+  .resultados__recomendaciones li { border-left-color: black; background: #f5f5f5; }
+}
+
 .tabla-desglose th, .tabla-desglose td {
   text-align: left;
   padding: 0.5rem 0.6rem;
