@@ -13,15 +13,19 @@ app = Flask(__name__)
 
 SYSTEM_PROMPT_NARRADOR = """Eres "VólticvS", un asesor energético con buen humor de Chile.
 Ya se calcularon con exactitud el consumo y el ahorro potencial del hogar del usuario;
-tu única tarea es redactar un resumen breve (4 a 6 frases) explicando los resultados de
-forma cálida, clara y con un toque de humor.
+tu única tarea es redactar un resumen explicando los resultados de forma cálida, clara
+y con un toque de humor.
+
+FORMATO OBLIGATORIO: escribe en 2 a 3 párrafos cortos, separados por un salto de línea
+en blanco entre cada uno (no un solo bloque corrido de texto).
 
 REGLA ABSOLUTA: no inventes ni cambies ningún número. Usa EXACTAMENTE los valores en
 kWh y CLP que te entrego. Si necesitas redondear, usa el mismo valor que te dieron.
-Destaca cuál es la mayor oportunidad de ahorro y da 5 - 7 recomendaciones concretas.
+Destaca cuál es la mayor oportunidad de ahorro y da 5 a 7 recomendaciones concretas.
 No repitas toda la lista de artefactos, enfócate en lo más relevante.
 
-Debes realizar una proyeccion en el tiempo ademas a los 3 meses, 6 meses, 12 meses, a los 2 años y 5 años.
+Debes mencionar la proyección del ahorro en el tiempo usando EXACTAMENTE estos plazos
+y sus valores ya calculados: 3 meses, 6 meses, 12 meses, 2 años y 5 años.
 """
 
 
@@ -35,13 +39,20 @@ def generar_narrativa(resumen: dict) -> str:
         mensaje = f"Estos son los resultados calculados para este hogar: {resumen}"
         respuesta = llm.invoke([SystemMessage(content=SYSTEM_PROMPT_NARRADOR), HumanMessage(content=mensaje)])
         return respuesta.content
-    except Exception:
+    except Exception as e:
         # Si no hay API key configurada o falla la llamada, igual entregamos
-        # un resumen útil basado 100% en los números ya calculados.
+        # un resumen útil basado 100% en los números ya calculados, respetando
+        # el nombre y formato aunque el modelo no haya respondido.
+        print(f"[VólticvS] Error generando narrativa vía Groq: {e}")
+        p = resumen["proyeccion"]
         return (
+            f"¡Hola! Soy VólticvS, tu asesor energético.\n\n"
             f"Tu consumo estimado es de {resumen['total_kwh_mes']} kWh al mes "
-            f"(~${resumen['total_clp_mes']:,.0f} CLP). Podrías ahorrar hasta "
-            f"${resumen['ahorro_potencial_clp_mes']:,.0f} CLP al mes aplicando los cambios sugeridos."
+            f"(~${resumen['total_clp_mes']:,.0f} CLP en tu factura). Podrías ahorrar hasta "
+            f"${resumen['ahorro_potencial_clp_mes']:,.0f} CLP al mes aplicando los cambios sugeridos.\n\n"
+            f"Ese ahorro se sostiene en el tiempo: en 3 meses serían ${p['ahorro_3_meses']:,.0f}, "
+            f"en 6 meses ${p['ahorro_6_meses']:,.0f}, al año ${p['ahorro_12_meses']:,.0f}, "
+            f"en 2 años ${p['ahorro_2_anios']:,.0f}, y en 5 años ${p['ahorro_5_anios']:,.0f} CLP."
         )
 
 
@@ -165,9 +176,10 @@ def calcular():
         "desglose": desglose,
         "recomendaciones": generar_recomendaciones(desglose),
         "proyeccion": {
-            "ahorro_1_mes": round(ahorro_potencial_clp_mes, 0),
+            "ahorro_3_meses": round(ahorro_potencial_clp_mes * 3, 0),
             "ahorro_6_meses": round(ahorro_potencial_clp_mes * 6, 0),
-            "ahorro_1_anio": round(ahorro_potencial_clp_mes * 12, 0),
+            "ahorro_12_meses": round(ahorro_potencial_clp_mes * 12, 0),
+            "ahorro_2_anios": round(ahorro_potencial_clp_mes * 24, 0),
             "ahorro_5_anios": round(ahorro_potencial_clp_mes * 60, 0),
         },
     }

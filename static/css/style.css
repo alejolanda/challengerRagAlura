@@ -322,6 +322,14 @@ input[type="text"] { width: 14rem; }
   color: var(--text-primary);
 }
 
+.resultados__narrativa p {
+  margin: 0 0 0.85rem;
+}
+
+.resultados__narrativa p:last-child {
+  margin-bottom: 0;
+}
+
 .resultados__totales {
   display: flex;
   gap: 1.5rem;

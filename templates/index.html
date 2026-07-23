@@ -6,7 +6,7 @@
 <title>VólticvS — Asesor Energético</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version }}">
 </head>
 <body>
 
@@ -369,7 +369,7 @@
       <h2 class="card__title">Resultado</h2>
       <button type="button" class="btn btn--ghost" id="btnImprimir">🖨️ Imprimir informe</button>
     </div>
-    <p class="resultados__narrativa" id="narrativa"></p>
+    <div class="resultados__narrativa" id="narrativa"></div>
     <div class="resultados__totales">
       <div><span class="resultados__label">Consumo total</span><span class="resultados__valor" id="totalKwh">—</span></div>
       <div><span class="resultados__label">Factura estimada</span><span class="resultados__valor" id="totalClp">—</span></div>
@@ -381,12 +381,13 @@
 
     <h3 class="resultados__subtitulo">📈 Cómo se sostiene tu ahorro en el tiempo</h3>
     <table class="tabla-desglose tabla-proyeccion">
-      <thead><tr><th>1 mes</th><th>6 meses</th><th>1 año</th><th>5 años</th></tr></thead>
+      <thead><tr><th>3 meses</th><th>6 meses</th><th>12 meses</th><th>2 años</th><th>5 años</th></tr></thead>
       <tbody>
         <tr>
-          <td id="proy1Mes">—</td>
+          <td id="proy3Meses">—</td>
           <td id="proy6Meses">—</td>
-          <td id="proy1Anio">—</td>
+          <td id="proy12Meses">—</td>
+          <td id="proy2Anios">—</td>
           <td id="proy5Anios">—</td>
         </tr>
       </tbody>
@@ -414,6 +415,6 @@
   </div>
 </template>
 
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v={{ asset_version }}"></script>
 </body>
 </html>

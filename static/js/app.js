@@ -13,6 +13,12 @@ document.querySelectorAll(".item.item--con-horas").forEach((item) => {
 });
 
 // Cargar países desde el backend
+let tarifaEditadaManualmente = false;
+const campoTarifaGlobal = document.getElementById("tarifaClp");
+campoTarifaGlobal.addEventListener("input", () => {
+  tarifaEditadaManualmente = true;
+});
+
 async function cargarPaises() {
   const selectPais = document.getElementById("selectPais");
   try {
@@ -35,10 +41,10 @@ async function cargarPaises() {
 
 function actualizarTarifaPorPais(paises, codigo) {
   const datos = paises[codigo];
-  const campoTarifa = document.getElementById("tarifaClp");
   const fuenteTexto = document.getElementById("fuenteTarifa");
-  if (datos.tarifa_kwh_referencial) {
-    campoTarifa.value = datos.tarifa_kwh_referencial;
+  // Si el usuario ya escribió su propia tarifa a mano, no se la pisamos.
+  if (datos.tarifa_kwh_referencial && !tarifaEditadaManualmente) {
+    campoTarifaGlobal.value = datos.tarifa_kwh_referencial;
   }
   fuenteTexto.textContent = `Fuente de referencia: ${datos.fuente}. Verifica el valor vigente ahí o usa el de tu boleta.`;
 }
@@ -148,7 +154,7 @@ formulario.addEventListener("submit", async (evento) => {
     cctv: null,
     hervidor: null,
     personalizados: recolectarPersonalizados(),
-    tarifa_clp_kwh: parseFloat(document.getElementById("tarifaClp").value) || 150,
+    tarifa_clp_kwh: parseFloat(campoTarifaGlobal.value) || 150,
   };
 
   if (document.querySelector('input[name="cctv"]:checked').value === "si") {
@@ -194,7 +200,7 @@ document.querySelectorAll(".btn--comparar").forEach((boton) => {
   boton.addEventListener("click", async () => {
     const item = boton.closest(".item");
     const horas = parseFloat(item.querySelector(".horas").value) || 0.1;
-    const tarifa = parseFloat(document.getElementById("tarifaClp").value) || 150;
+    const tarifa = parseFloat(campoTarifaGlobal.value) || 150;
     const contenedor = item.querySelector(".comparador-resultado");
 
     boton.textContent = "Comparando…";
@@ -231,6 +237,7 @@ document.querySelectorAll(".btn--comparar").forEach((boton) => {
 // Nuevo cálculo / nueva persona
 document.getElementById("btnNuevoCalculo").addEventListener("click", () => {
   formulario.reset();
+  tarifaEditadaManualmente = false;
   document.querySelectorAll(".item.activo").forEach((item) => item.classList.remove("activo"));
   listaPersonalizados.innerHTML = "";
   resultadosSeccion.hidden = true;
@@ -240,7 +247,15 @@ document.getElementById("btnNuevoCalculo").addEventListener("click", () => {
 
 function mostrarResultados(resultado) {
   resultadosSeccion.hidden = false;
-  document.getElementById("narrativa").textContent = resultado.narrativa;
+
+  // Narrativa en párrafos separados (no todo pegado en un bloque)
+  const contenedorNarrativa = document.getElementById("narrativa");
+  const parrafos = resultado.narrativa
+    .split(/\n\s*\n/)
+    .map((parrafo) => parrafo.trim())
+    .filter(Boolean);
+  contenedorNarrativa.innerHTML = parrafos.map((p) => `<p>${p}</p>`).join("");
+
   document.getElementById("totalKwh").textContent = `${resultado.total_kwh_mes} kWh`;
   document.getElementById("totalClp").textContent = `$${resultado.total_clp_mes.toLocaleString("es-CL")}`;
   document.getElementById("ahorroClp").textContent = `$${resultado.ahorro_potencial_clp_mes.toLocaleString("es-CL")}`;
@@ -260,12 +275,14 @@ function mostrarResultados(resultado) {
     listaRecomendaciones.appendChild(li);
   }
 
-  // Proyección en el tiempo
+  // Proyección en el tiempo (3m / 6m / 12m / 2a / 5a)
   if (resultado.proyeccion) {
-    document.getElementById("proy1Mes").textContent = `$${resultado.proyeccion.ahorro_1_mes.toLocaleString("es-CL")}`;
-    document.getElementById("proy6Meses").textContent = `$${resultado.proyeccion.ahorro_6_meses.toLocaleString("es-CL")}`;
-    document.getElementById("proy1Anio").textContent = `$${resultado.proyeccion.ahorro_1_anio.toLocaleString("es-CL")}`;
-    document.getElementById("proy5Anios").textContent = `$${resultado.proyeccion.ahorro_5_anios.toLocaleString("es-CL")}`;
+    const p = resultado.proyeccion;
+    document.getElementById("proy3Meses").textContent = `$${p.ahorro_3_meses.toLocaleString("es-CL")}`;
+    document.getElementById("proy6Meses").textContent = `$${p.ahorro_6_meses.toLocaleString("es-CL")}`;
+    document.getElementById("proy12Meses").textContent = `$${p.ahorro_12_meses.toLocaleString("es-CL")}`;
+    document.getElementById("proy2Anios").textContent = `$${p.ahorro_2_anios.toLocaleString("es-CL")}`;
+    document.getElementById("proy5Anios").textContent = `$${p.ahorro_5_anios.toLocaleString("es-CL")}`;
   }
 
   const cuerpo = document.getElementById("desgloseBody");
@@ -282,6 +299,9 @@ function mostrarResultados(resultado) {
   resultadosSeccion.scrollIntoView({ behavior: "smooth" });
 }
 
-document.getElementById("btnImprimir").addEventListener("click", () => {
-  window.print();
-});
+const btnImprimir = document.getElementById("btnImprimir");
+if (btnImprimir) {
+  btnImprimir.addEventListener("click", () => {
+    window.print();
+  });
+}
