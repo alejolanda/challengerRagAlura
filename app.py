@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template, request
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
 
-from src import calculos
+from src import boleta, calculos
 
 load_dotenv()
 
@@ -56,17 +56,36 @@ def generar_narrativa(resumen: dict) -> str:
         )
 
 
+# Artefactos donde "desconectar cuando no se usa" NO es una recomendación real:
+# necesitan estar siempre energizados para cumplir su función (recibir la señal
+# del control remoto, mantenerse en red, etc.). Recomendar desconectarlos sería
+# consejo falso/no accionable, aunque el cálculo matemático diga que "ahorrarías".
+NO_DESCONECTABLES = {"porton_electrico", "camara_seguridad", "dvr_nvr", "router_wifi"}
+
+# Artefactos donde desconectar es posible pero con matices reales (no absoluto)
+CON_MATIZ = {
+    "decodificador_tv": "Apaga completamente tu decodificador (no lo dejes en standby) en los "
+                         "períodos largos que no lo uses — revisa antes si tienes grabaciones programadas",
+}
+
+
 def generar_recomendaciones(desglose: list) -> list:
     """
     Convierte el desglose numérico en frases de recomendación concretas,
     cada una con el ahorro mensual y anual ya calculado (determinista, sin IA).
-    Ordenadas de mayor a menor impacto de ahorro.
+    Ordenadas de mayor a menor impacto de ahorro. Excluye o matiza recomendaciones
+    que no son realmente accionables en la práctica (ver NO_DESCONECTABLES).
     """
     candidatas = []
     for item in desglose:
         ahorro_mes = item.get("ahorro_clp_mes", 0)
         if not ahorro_mes or ahorro_mes <= 0:
             continue
+
+        clave = item.get("clave")
+        if clave in NO_DESCONECTABLES:
+            continue  # no es un consejo real y medible: se omite, no se inventa
+
         ahorro_anio = round(ahorro_mes * 12)
         nombre = item["nombre"]
 
@@ -74,6 +93,8 @@ def generar_recomendaciones(desglose: list) -> list:
             frase = f"Cambia tu {nombre.lower()} a LED"
         elif "kwh_mes_llenado_habitual" in item:
             frase = "Hierve solo el agua que necesitas en vez de llenar el hervidor completo"
+        elif clave in CON_MATIZ:
+            frase = CON_MATIZ[clave]
         elif "kwh_mes_optimo" in item:
             frase = f"Desconecta {nombre.lower()} cuando no lo estés usando"
         else:
@@ -84,6 +105,28 @@ def generar_recomendaciones(desglose: list) -> list:
 
     candidatas.sort(key=lambda par: par[0], reverse=True)
     return [texto for _, texto in candidatas]
+
+
+@app.route("/api/extraer-boleta", methods=["POST"])
+def extraer_boleta():
+    archivo = request.files.get("boleta")
+    if not archivo or archivo.filename == "":
+        return jsonify({"error": "No se recibió ningún archivo."}), 400
+    if not archivo.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "Solo se aceptan archivos PDF."}), 400
+
+    try:
+        texto = boleta.extraer_texto_pdf(archivo.stream)
+        if not texto.strip():
+            return jsonify({
+                "error": "No se pudo leer texto del PDF (¿es una boleta escaneada como imagen?). "
+                         "Ingresa la tarifa manualmente."
+            }), 200
+        datos = boleta.extraer_datos_boleta(texto)
+        return jsonify(datos)
+    except Exception as e:
+        print(f"[VólticvS] Error extrayendo boleta: {e}")
+        return jsonify({"error": "No se pudo procesar el PDF. Ingresa la tarifa manualmente."}), 200
 
 
 @app.route("/api/paises")

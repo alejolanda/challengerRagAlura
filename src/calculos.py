@@ -44,6 +44,7 @@ def consumo_mensual_standby(clave_artefacto: str, horas_uso_diario: float, canti
     kwh_mes_optimo = (wh_dia_optimo * cantidad * dias_al_mes) / 1000
 
     return {
+        "clave": clave_artefacto,
         "nombre": ref["nombre"],
         "kwh_mes_actual": round(kwh_mes, 2),
         "kwh_mes_optimo": round(kwh_mes_optimo, 2),

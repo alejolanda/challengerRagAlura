@@ -354,7 +354,19 @@
     </section>
 
     <section class="card">
-      <h2 class="card__title">07 · Tarifa eléctrica</h2>
+      <h2 class="card__title">07 · Sube tu boleta real (PDF) — opcional</h2>
+      <p class="card__hint">
+        Sube el PDF de tu última boleta eléctrica y VólticvS intenta detectar tu consumo y
+        tarifa real. <strong>Es una detección automática, no un dato verificado</strong> —
+        revisa que coincida con tu boleta antes de usarlo.
+      </p>
+      <input type="file" id="archivoBoleta" accept="application/pdf">
+      <button type="button" class="btn btn--ghost" id="btnExtraerBoleta">Extraer datos de mi boleta</button>
+      <div id="resultadoBoleta" class="resultado-boleta" hidden></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">08 · Tarifa eléctrica</h2>
       <label>Valor del kWh en tu boleta (CLP)
         <input type="number" min="1" value="150" id="tarifaClp">
       </label>

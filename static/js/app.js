@@ -145,6 +145,60 @@ function recolectarPersonalizados() {
   return items;
 }
 
+// Subida de boleta PDF (best-effort, requiere confirmación del usuario)
+document.getElementById("btnExtraerBoleta").addEventListener("click", async () => {
+  const input = document.getElementById("archivoBoleta");
+  const contenedor = document.getElementById("resultadoBoleta");
+  const boton = document.getElementById("btnExtraerBoleta");
+
+  if (!input.files || input.files.length === 0) {
+    contenedor.hidden = false;
+    contenedor.innerHTML = '<p class="aviso">Primero selecciona un archivo PDF.</p>';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("boleta", input.files[0]);
+
+  boton.textContent = "Leyendo boleta…";
+  boton.disabled = true;
+  try {
+    const respuesta = await fetch("/api/extraer-boleta", { method: "POST", body: formData });
+    const datos = await respuesta.json();
+    contenedor.hidden = false;
+
+    if (datos.error) {
+      contenedor.innerHTML = `<p class="aviso">${datos.error}</p>`;
+    } else if (!datos.tarifa_calculada) {
+      contenedor.innerHTML = `
+        <p class="aviso">
+          Detectamos ${datos.kwh_detectado ? datos.kwh_detectado + " kWh" : "el consumo (no se pudo leer)"}
+          y ${datos.monto_total_detectado ? "$" + datos.monto_total_detectado.toLocaleString("es-CL") : "el monto total (no se pudo leer)"}.
+          No se pudo calcular la tarifa automáticamente — ingrésala manualmente abajo.
+        </p>`;
+    } else {
+      contenedor.innerHTML = `
+        <p>Detectamos en tu boleta: <strong>${datos.kwh_detectado} kWh</strong> consumidos por
+        <strong>$${datos.monto_total_detectado.toLocaleString("es-CL")}</strong> →
+        tarifa real: <strong>$${datos.tarifa_calculada}/kWh</strong>.</p>
+        <p class="aviso">⚠️ Verifica que estos números coincidan con tu boleta antes de usarlos.</p>
+        <button type="button" class="btn btn--ghost" id="btnUsarTarifaBoleta">Usar esta tarifa (${datos.tarifa_calculada}/kWh)</button>`;
+
+      document.getElementById("btnUsarTarifaBoleta").addEventListener("click", () => {
+        campoTarifaGlobal.value = datos.tarifa_calculada;
+        tarifaEditadaManualmente = true;
+        contenedor.innerHTML += '<p class="aviso">✅ Tarifa aplicada al formulario.</p>';
+      });
+    }
+  } catch (error) {
+    contenedor.hidden = false;
+    contenedor.innerHTML = '<p class="aviso">No se pudo procesar el archivo. Intenta de nuevo.</p>';
+  } finally {
+    boton.textContent = "Extraer datos de mi boleta";
+    boton.disabled = false;
+  }
+});
+
 formulario.addEventListener("submit", async (evento) => {
   evento.preventDefault();
 
